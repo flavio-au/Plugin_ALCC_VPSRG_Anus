@@ -968,7 +968,7 @@ namespace VMS.TPS
             // System.Windows.Clipboard.Clear();
             // System.Windows.Clipboard.SetText(@"c:\temp\");
 
-        }
+    }
 
   }
 }
