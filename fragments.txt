@@ -1,0 +1,18 @@
+Para elegir plan setup y plan sum:
+
+//** Select plan (takes in charge PlanSetup and PlanSum)
+            my_list.Clear();
+            foreach (PlanSetup plan in my_course.PlanSetups)
+            { my_list.Add(plan.Id); }
+            foreach (PlanSum plan in my_course.PlanSums)
+            { my_list.Add(plan.Id); }
+            selectDiag = new SelectBox(my_list, "Plan Id");
+            selected = selectDiag.Get_Item();
+
+Inside following if shold be splited all the program in order to have PlanSetup and PlanSum covered:
+
+// Check if selection is PlanSetup or PlanSum
+            if (my_course.PlanSetups.Where(c => c.Id.Equals(selected)).Any())
+            { PlanSetup my_plan = my_course.PlanSetups.Where(c => c.Id.Equals(selected)).First(); }
+            else
+            { PlanSetup my_plan = my_course.PlanSetups.Where(c => c.Id.Equals(selected)).First();   }
