@@ -644,7 +644,7 @@ namespace VMS.TPS
 
             // Now the creation of the text file for the worksheet
             // Col A - Skip B
-            VPSRG_Anus_txt = Original_or_RapidPlan + ", ";
+            VPSRG_Anus_txt = Original_or_RapidPlan + ", , "; // Skip B
             // Col C 
             VPSRG_Anus_txt = VPSRG_Anus_txt + my_patient.Hospital.Id + ", ";
             // Col D 
@@ -962,7 +962,7 @@ namespace VMS.TPS
             // Build output text
             String txt = "Target (Code : Label)" + " --> " + "Selected (Id)" + System.Environment.NewLine;
             txt = txt + "_______________________________________" + System.Environment.NewLine + System.Environment.NewLine;
-            foreach (var item in selected_structs.Where(s => s.Item2.Id != "Body"))
+            foreach (var item in selected_structs.Where(s => s.Item1 != "Body"))
             {
                 txt = txt + lst_struct_to_search.Where(l => l.Item2== item.Item1).First().Item1 + " : " + item.Item1 
                             + " --> " + item.Item2.Id + System.Environment.NewLine;
