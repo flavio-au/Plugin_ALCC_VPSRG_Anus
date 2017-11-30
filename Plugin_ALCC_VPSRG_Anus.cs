@@ -970,7 +970,7 @@ namespace VMS.TPS
             System.Windows.MessageBox.Show(txt,"Selected structures");
 
             //** Done, now to write the text
-            string txtPath = text + @"\" + my_patient.Hospital.Id + "_" + my_patient.Id + "_" + my_plan.Id + ".txt";
+            string txtPath = text + @"\" + my_patient.Hospital.Id + "_" + my_patient.Id + "_" + my_plan.Id + ".csv";
             string txtMsgPath = text + @"\SelectedStructures_" + my_patient.Hospital.Id + "_" 
                                     + my_patient.Id + "_" + my_plan.Id + ".txt";
 
