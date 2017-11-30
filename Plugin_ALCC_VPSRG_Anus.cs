@@ -132,6 +132,7 @@ namespace VMS.TPS
             double mu = 0.0;
             int? NumberOfFractions = 0;
             String vmat = "VMAT";
+            String Original_or_RapidPlan = "n/a";
 
             if (my_plan is PlanSetup)
             {
@@ -189,6 +190,12 @@ namespace VMS.TPS
                 selectDiag = new SelectBox(my_list, "Select Plan Type");
                 vmat = selectDiag.Get_Item().Replace(" ?","");
             }
+            // Original_or_RapidPlan?
+            my_list.Clear();
+            { my_list.Add("Original ?"); my_list.Add("RapidPlan ?"); }
+            selectDiag = new SelectBox(my_list, "Original Or RapidPlan?");
+            Original_or_RapidPlan = selectDiag.Get_Item().Replace(" ?", "");
+            
 
             //** Define number of PTVs
             my_list.Clear();
@@ -531,6 +538,9 @@ namespace VMS.TPS
                     writer.WriteStartElement("Plan_ID");
                     writer.WriteString(my_plan.Id);
                     writer.WriteEndElement(); // </Plan_Id>
+                    writer.WriteStartElement("Original_or_RapidPlan");
+                    writer.WriteString(Original_or_RapidPlan);
+                    writer.WriteEndElement(); // </Original_or_RapidPlan>
                     writer.WriteStartElement("Diagnosis");
                     writer.WriteString(Diagnosis);
                     writer.WriteEndElement(); // </Diagnosis>
@@ -633,8 +643,12 @@ namespace VMS.TPS
             }
 
             // Now the creation of the text file for the worksheet
+            // Col A - Skip B
+            VPSRG_Anus_txt = Original_or_RapidPlan + ", ";
+            // Col C 
+            VPSRG_Anus_txt = VPSRG_Anus_txt + my_patient.Hospital.Id + ", ";
             // Col D 
-            VPSRG_Anus_txt=my_patient.Id + ", "; 
+            VPSRG_Anus_txt = VPSRG_Anus_txt + my_patient.Id + ", "; 
             // Col E
             VPSRG_Anus_txt = VPSRG_Anus_txt + Diagnosis +", ";
             // Col F
