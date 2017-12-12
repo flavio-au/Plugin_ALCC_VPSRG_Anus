@@ -97,6 +97,7 @@ namespace VMS.TPS
             bool flag; // a boolean for control
             double bin = 0.01; // for binning the DVHs, this values is for plans in Gy
             bool alcc_flag=(my_patient.Hospital.Id=="Barwon Health"); // a flag for using ALCC-Ids
+            String Rapidplan_version;
 
             //** Select course
             my_list.Clear();
@@ -232,8 +233,12 @@ namespace VMS.TPS
             }
 
             //** Diagnosis
-            Diagnosis = Microsoft.VisualBasic.Interaction.InputBox("Diagnosis ?", "Diagnosis");
-            Stage = Microsoft.VisualBasic.Interaction.InputBox("Stage ?", "Stage");
+            Diagnosis = Microsoft.VisualBasic.Interaction.InputBox("Diagnosis ?"
+                + System.Environment.NewLine + System.Environment.NewLine
+                    + "(leave blank + [Ok] Or [Cancel] for skipping)", "Diagnosis");
+            Stage = Microsoft.VisualBasic.Interaction.InputBox("Stage ?"
+                + System.Environment.NewLine + System.Environment.NewLine
+                    + "(leave blank + [Ok] Or [Cancel] for skipping)", "Stage");
             my_list.Clear();
             my_list.Add("Primary site only");
             my_list.Add("Primary site + Pelvic nodes");
@@ -326,6 +331,11 @@ namespace VMS.TPS
                 }
             }
 
+            // RapidPlan Model version
+            Rapidplan_version = Microsoft.VisualBasic.Interaction.InputBox("RapidPlan Model version used ?"
+                    + System.Environment.NewLine + System.Environment.NewLine
+                    + "(leave blank + [Ok] Or [Cancel] for skipping)", "RapidPlan Model version");
+
             //** Select all structures of interest First by code, then by heuristic, then prompt for name
             // Build the list of structures to search: (CODE, Label, ALCC-Id)
             lst_struct_to_search.Add(Tuple.Create("BODY", "Body", "BODY"));
@@ -337,7 +347,7 @@ namespace VMS.TPS
             lst_struct_to_search.Add(Tuple.Create("16591", "Left ilium", "Iliac Crest (L)"));
             lst_struct_to_search.Add(Tuple.Create("16590", "Right ilium", "Iliac Crest (R)"));
             lst_struct_to_search.Add(Tuple.Create("45643", "Genitalia External", "Ext Gen"));
-            lst_struct_to_search.Add(Tuple.Create("PTV_High", "PTV High Risk", "IP PTV 54")); // PTV High
+            lst_struct_to_search.Add(Tuple.Create("PTV_High", "PTV High Risk", "PTV 54")); // PTV High
             if (num_of_ptvs == 2) // PTV High + PTV Low ONLY
             { lst_struct_to_search.Add(Tuple.Create("PTV_Low", "PTV Low Risk", "IP PTV 45")); } 
             if (num_of_ptvs == 3) // PTV High + PTV Int + PTV Low
@@ -363,12 +373,24 @@ namespace VMS.TPS
                 // A case apart for PTV High (2 possible codes: PTV_High or PTVp
                 if (t.Item1=="PTV_High") // time to search for 2 possible CODES: PTV_High and PTVp
                 {
-                    // Search by ALCC-Id (can oly be one as Id is unique) and NOT empty
-                    if (alcc_flag && set_of_structs.Where(s => s.Id == t.Item3 && !s.IsEmpty).Any())
+                    // Search by ALCC-Id (can be more than 1) and NOT empty
+                    if (alcc_flag && set_of_structs.Where(s => s.Id.Contains(t.Item3) && !s.IsEmpty).Any())
                     {
-                        selected_structs.Add(Tuple.Create(t.Item2,
-                            set_of_structs.Where(s => s.Id == t.Item3 & !s.IsEmpty).First()));
-                        flag = false;
+                        // check if only 1 has same code and is not empty
+                        if (set_of_structs.Where(s => s.Id.Contains(t.Item3) && !s.IsEmpty).Count() == 1)
+                        {
+                            selected_structs.Add(Tuple.Create(t.Item2,
+                                set_of_structs.Where(s => s.Id.Contains(t.Item3) && !s.IsEmpty).First()));
+                            flag = false;
+                        }
+                        else // more than 1 then prompt for user choosing between non-empty ones
+                        {
+                            partial_set_of_structs = set_of_structs.Where(s => s.Id.Contains(t.Item3) && !s.IsEmpty);
+                            title = t.Item2;
+                            selectOneStruct = new SelectOneStruct(title, my_plan, partial_set_of_structs);
+                            selected_structs.Add(Tuple.Create(t.Item2, selectOneStruct.Get_Selected()));
+                            flag = false;
+                        }
                     }
                     else // Search by code and NOT empty
                     {
@@ -579,6 +601,9 @@ namespace VMS.TPS
                     writer.WriteStartElement("PlanType");
                     writer.WriteString(vmat);
                     writer.WriteEndElement(); // </PlanType>
+                    writer.WriteStartElement("RapidPlanModelVersion");
+                    writer.WriteString(Rapidplan_version);
+                    writer.WriteEndElement(); // </RapidPlanModelVersion>
                     // loop on DVHs
                     foreach (var item in selected_structs)
                     {
@@ -669,8 +694,10 @@ namespace VMS.TPS
             VPSRG_Anus_txt = VPSRG_Anus_txt + Math.Round(PrescribedPercentage,2).ToString() + ", ";
             // Col P
             VPSRG_Anus_txt = VPSRG_Anus_txt + Math.Round(mu, 1).ToString() + ", ";
-            // Col Q - Skip R-S
-            VPSRG_Anus_txt = VPSRG_Anus_txt + vmat + ", , , "; // Skip R-S
+            // Col Q 
+            VPSRG_Anus_txt = VPSRG_Anus_txt + vmat + ", "; 
+            // Col R - Skip R
+            VPSRG_Anus_txt = VPSRG_Anus_txt + Rapidplan_version + ", , "; // Skip S
             // Col T-W: Bladder
             if (selected_structs.Where(t => t.Item1 == "Bladder").Any())
             {
@@ -960,12 +987,12 @@ namespace VMS.TPS
             VPSRG_Anus_txt = VPSRG_Anus_txt + num_of_ptvs.ToString();
 
             // Build output text
-            String txt = "Target (Code : Label)" + " --> " + "Selected (Id)" + System.Environment.NewLine;
-            txt = txt + "_______________________________________" + System.Environment.NewLine + System.Environment.NewLine;
+            String txt = "Target (Code : Label)" + "  -->  " + "Selected (Id)" + System.Environment.NewLine;
+            txt = txt + "__________________________________________" + System.Environment.NewLine + System.Environment.NewLine;
             foreach (var item in selected_structs.Where(s => s.Item1 != "Body"))
             {
                 txt = txt + lst_struct_to_search.Where(l => l.Item2== item.Item1).First().Item1 + " : " + item.Item1 
-                            + " --> " + item.Item2.Id + System.Environment.NewLine;
+                            + "  -->  " + item.Item2.Id + System.Environment.NewLine;
             }
             System.Windows.MessageBox.Show(txt,"Selected structures");
 
