@@ -460,8 +460,9 @@ namespace VMS.TPS
                     // Promt for name (if flag still true)
                     while (flag) // do while flag is true
                     {
-                        text = Microsoft.VisualBasic.Interaction.InputBox("PTV High ? ", "Enter PTV High structure name");
-                        // Have to evaluete: if text corresponds to structure, select structure and set flag false to cont.
+                        text = Microsoft.VisualBasic.Interaction.InputBox("PTV High ? " + Environment.NewLine +
+                            "(*) type entire or partial name" + Environment.NewLine , "Enter PTV High structure name");
+                        // Have to evaluate: if text corresponds to structure, select structure and set flag false to cont.
                         //                   if text not correspond to structure, keep flag=true to ask again
                         if (text != "") // non empty string
                         {
@@ -488,7 +489,7 @@ namespace VMS.TPS
                                 if (!set_of_structs.Where(s => s.Id == text).Any())
                                 {
                                     System.Windows.MessageBox.Show("There is no structure with" + System.Environment.NewLine +
-                                          "Id =" + text);
+                                          "Id containing: " + text);
                                 }
                                 else
                                 {
@@ -547,7 +548,8 @@ namespace VMS.TPS
                     while (flag) // do while flag is true
                     {
                         text = Microsoft.VisualBasic.Interaction.InputBox(t.Item2 + "?" + Environment.NewLine +
-                             Environment.NewLine + "( leave empty or cancel for not selecting any )", "Enter structure name");
+                            "(*) type entire or partial name" + Environment.NewLine + 
+                            "( leave empty or cancel for not selecting any )", "Enter structure name");
                         // Have to evaluete: if text empty, then don't choose nothing ans set flag false to continue
                         //                   if text corresponds to structure, select structure and set flag false to cont.
                         //                   if text not correspond to structure, keep flag=true to ask again
