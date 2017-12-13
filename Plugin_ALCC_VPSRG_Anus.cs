@@ -461,14 +461,27 @@ namespace VMS.TPS
                         //                   if text not correspond to structure, keep flag=true to ask again
                         if (text != "") // non empty string
                         {
-                            if (set_of_structs.Where(s => s.Id == text && !s.IsEmpty).Any()) // Found match flag to false
-                            { 
-                                selected_structs.Add(Tuple.Create(t.Item2, set_of_structs.Where(s => s.Id == text).First()));
-                                flag = false;
+                            if (set_of_structs.Where(s => s.Id.Contains(text) && !s.IsEmpty).Any()) // Found match flag to false
+                            {
+                                // check exact match and is not empty
+                                if (set_of_structs.Where(s => s.Id == text && !s.IsEmpty).Any())
+                                {
+                                    selected_structs.Add(Tuple.Create(t.Item2,
+                                        set_of_structs.Where(s => s.Id == text && !s.IsEmpty).First()));
+                                    flag = false;
+                                }
+                                else // more than 1 then prompt for user choosing between non-empty ones
+                                {
+                                    partial_set_of_structs = set_of_structs.Where(s => s.Id.Contains(text) && !s.IsEmpty);
+                                    title = t.Item2;
+                                    selectOneStruct = new SelectOneStruct(title, my_plan, partial_set_of_structs);
+                                    selected_structs.Add(Tuple.Create(t.Item2, selectOneStruct.Get_Selected()));
+                                    flag = false;
+                                }
                             }
                             else
                             {
-                                if (set_of_structs.Where(s => s.Id == text).Any())
+                                if (!set_of_structs.Where(s => s.Id == text).Any())
                                 {
                                     System.Windows.MessageBox.Show("There is no structure with" + System.Environment.NewLine +
                                           "Id =" + text);
@@ -536,11 +549,23 @@ namespace VMS.TPS
                         //                   if text not correspond to structure, keep flag=true to ask again
                         if (text != "") // non empty string
                         {
-                            if (set_of_structs.Where(s => s.Id == text && !s.IsEmpty).Any()) // Found match flag to false
+                            if (set_of_structs.Where(s => s.Id.Contains(text) && !s.IsEmpty).Any()) // Found match flag to false
                             {
-                                selected_structs.Add(Tuple.Create(t.Item2, set_of_structs.Where(s => s.Id == text
-                                                                                                & !s.IsEmpty).First()));
-                                flag = false;
+                                // check exact match and is not empty
+                                if (set_of_structs.Where(s => s.Id == text && !s.IsEmpty).Any())
+                                {
+                                    selected_structs.Add(Tuple.Create(t.Item2,
+                                        set_of_structs.Where(s => s.Id == text && !s.IsEmpty).First()));
+                                    flag = false;
+                                }
+                                else // more than 1 then prompt for user choosing between non-empty ones
+                                {
+                                    partial_set_of_structs = set_of_structs.Where(s => s.Id.Contains(text) && !s.IsEmpty);
+                                    title = t.Item2;
+                                    selectOneStruct = new SelectOneStruct(title, my_plan, partial_set_of_structs);
+                                    selected_structs.Add(Tuple.Create(t.Item2, selectOneStruct.Get_Selected()));
+                                    flag = false;
+                                }
                             }
                         }
                         else
