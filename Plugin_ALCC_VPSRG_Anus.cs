@@ -339,7 +339,7 @@ namespace VMS.TPS
             //** Select all structures of interest First by code, then by heuristic, then prompt for name
             // alcc_flag=(HospID==Barwon Health) is used for searching first by ALCC Ids
             // Build the list of structures to search: (CODE, Label, ALCC-Id)
-            lst_struct_to_search.Add(Tuple.Create("BODY", "Body", "BODY"));
+            // lst_struct_to_search.Add(Tuple.Create("BODY", "Body", "BODY")); Apart for not distracting
             lst_struct_to_search.Add(Tuple.Create("15900", "Bladder", "Bladder"));
             lst_struct_to_search.Add(Tuple.Create("7200", "Bowel Small", "Bowel Small"));
             lst_struct_to_search.Add(Tuple.Create("7201", "Bowel Large", "Bowel Large"));
@@ -367,7 +367,11 @@ namespace VMS.TPS
             {
                 set_of_structs = ((PlanSum) my_plan).StructureSet.Structures;
             }
-            
+
+            // Search for body
+            selected_structs.Add(Tuple.Create("Body",
+                                set_of_structs.Where(s => s.DicomType.ToLower() == "external").First()));
+
             // Loop on list of strcuts to search
             foreach (Tuple<String,String,String> t in lst_struct_to_search)
             {
