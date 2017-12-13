@@ -337,6 +337,7 @@ namespace VMS.TPS
                     + "(leave blank + [Ok] Or [Cancel] for skipping)", "RapidPlan Model version");
 
             //** Select all structures of interest First by code, then by heuristic, then prompt for name
+            // alcc_flag=(HospID==Barwon Health) is used for searching first by ALCC Ids
             // Build the list of structures to search: (CODE, Label, ALCC-Id)
             lst_struct_to_search.Add(Tuple.Create("BODY", "Body", "BODY"));
             lst_struct_to_search.Add(Tuple.Create("15900", "Bladder", "Bladder"));
@@ -355,7 +356,9 @@ namespace VMS.TPS
               lst_struct_to_search.Add(Tuple.Create("PTV_Low", "PTV Low Risk", "IP PTV 45"));
             } 
 
-            // Start searching for structures
+            // **** Start searching for structures
+            
+            // First define the collection of strcutures
             if (my_plan is PlanSetup)
             {
                 set_of_structs = ((PlanSetup) my_plan).StructureSet.Structures;
@@ -370,10 +373,10 @@ namespace VMS.TPS
             {
                 flag = true; // to decide if promt user for name or not
 
-                // A case apart for PTV High (2 possible codes: PTV_High or PTVp
+                // A case apart for PTV High (2 possible codes: PTV_High or PTVp)
                 if (t.Item1=="PTV_High") // time to search for 2 possible CODES: PTV_High and PTVp
                 {
-                    // Search by ALCC-Id (can be more than 1) and NOT empty
+                    // Search by Contains(ALCC-Id) (can be more than 1) and NOT empty
                     if (alcc_flag && set_of_structs.Where(s => s.Id.Contains(t.Item3) && !s.IsEmpty).Any())
                     {
                         // check if only 1 has same code and is not empty
@@ -394,10 +397,11 @@ namespace VMS.TPS
                     }
                     else // Search by code and NOT empty
                     {
-                        bool flag_PTV_High = set_of_structs.Where(s => s.StructureCodeInfos.First().Code == "PTV_High" 
-                                                        && !s.IsEmpty).Any();
-                        bool flag_PTVp = set_of_structs.Where(s => s.StructureCodeInfos.First().Code == "PTVp"
-                                                        && !s.IsEmpty).Any();
+                        bool flag_PTV_High = set_of_structs.Where(s => s.StructureCodeInfos.Any() &&
+                                                s.StructureCodeInfos.First().Code == "PTV_High" && !s.IsEmpty).Any();
+                        bool flag_PTVp = set_of_structs.Where(s => s.StructureCodeInfos.Any() &&
+                                                s.StructureCodeInfos.First().Code == "PTVp" && !s.IsEmpty).Any();
+
                         if (flag_PTV_High & !flag_PTVp)
                         {
                             // check if only 1 has same code and is not empty
@@ -481,15 +485,28 @@ namespace VMS.TPS
                 else // t points to any other structure not PTV_High
                 {
                     // Search by ALCC-Id
-                    if (alcc_flag && set_of_structs.Where(s => s.Id == t.Item3 && !s.IsEmpty).Any())
+                    if (alcc_flag && set_of_structs.Where(s => s.Id.Contains(t.Item3) && !s.IsEmpty).Any())
                     {
-                        selected_structs.Add(Tuple.Create(t.Item2,
-                            set_of_structs.Where(s => s.Id == t.Item3 & !s.IsEmpty).First()));
-                        flag = false;
+                        // check if only 1 has same code and is not empty
+                        if (set_of_structs.Where(s => s.Id.Contains(t.Item3) && !s.IsEmpty).Count() == 1)
+                        {
+                            selected_structs.Add(Tuple.Create(t.Item2,
+                                set_of_structs.Where(s => s.Id.Contains(t.Item3) && !s.IsEmpty).First()));
+                            flag = false;
+                        }
+                        else // more than 1 then prompt for user choosing between non-empty ones
+                        {
+                            partial_set_of_structs = set_of_structs.Where(s => s.Id.Contains(t.Item3) && !s.IsEmpty);
+                            title = t.Item2;
+                            selectOneStruct = new SelectOneStruct(title, my_plan, partial_set_of_structs);
+                            selected_structs.Add(Tuple.Create(t.Item2, selectOneStruct.Get_Selected()));
+                            flag = false;
+                        }
                     }
                     else // Search by code
                     {
-                        if (set_of_structs.Where(s => s.StructureCodeInfos.First().Code == t.Item1 && !s.IsEmpty).Any())
+                        if (set_of_structs.Where(s => s.StructureCodeInfos.Any() && s.StructureCodeInfos.First().Code == t.Item1 
+                                                         && !s.IsEmpty).Any())
                         {
                             // check if only 1 has same code
                             if (set_of_structs.Where(s => s.StructureCodeInfos.First().Code == t.Item1).Count() == 1) 
