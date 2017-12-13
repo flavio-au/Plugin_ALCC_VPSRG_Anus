@@ -339,7 +339,8 @@ namespace VMS.TPS
             //** Select all structures of interest First by code, then by heuristic, then prompt for name
             // alcc_flag=(HospID==Barwon Health) is used for searching first by ALCC Ids
             // Build the list of structures to search: (CODE, Label, ALCC-Id)
-            // lst_struct_to_search.Add(Tuple.Create("BODY", "Body", "BODY")); Apart for not distracting
+            // lst_struct_to_search.Add(Tuple.Create("BODY", "Body", "BODY")); BODY considered apart for not distracting
+            // there is only one struct with dicom type "external"
             lst_struct_to_search.Add(Tuple.Create("15900", "Bladder", "Bladder"));
             lst_struct_to_search.Add(Tuple.Create("7200", "Bowel Small", "Bowel Small"));
             lst_struct_to_search.Add(Tuple.Create("7201", "Bowel Large", "Bowel Large"));
@@ -372,7 +373,7 @@ namespace VMS.TPS
             selected_structs.Add(Tuple.Create("Body",
                                 set_of_structs.Where(s => s.DicomType.ToLower() == "external").First()));
 
-            // Loop on list of strcuts to search
+            // Loop on list of structs to search
             foreach (Tuple<String,String,String> t in lst_struct_to_search)
             {
                 flag = true; // to decide if promt user for name or not
@@ -461,12 +462,12 @@ namespace VMS.TPS
                     while (flag) // do while flag is true
                     {
                         text = Microsoft.VisualBasic.Interaction.InputBox("PTV High ? " + Environment.NewLine +
-                            "(*) type entire or partial name" + Environment.NewLine , "Enter PTV High structure name");
+                            "(*) entire or partial name (case insensitive)" + Environment.NewLine , "Enter PTV High structure name");
                         // Have to evaluate: if text corresponds to structure, select structure and set flag false to cont.
                         //                   if text not correspond to structure, keep flag=true to ask again
                         if (text != "") // non empty string
                         {
-                            if (set_of_structs.Where(s => s.Id.Contains(text) && !s.IsEmpty).Any()) // Found match flag to false
+                            if (set_of_structs.Where(s => s.Id.ToLower().Contains(text.ToLower()) && !s.IsEmpty).Any()) //Found flag to false
                             {
                                 // check exact match and is not empty
                                 if (set_of_structs.Where(s => s.Id == text && !s.IsEmpty).Any())
@@ -477,22 +478,23 @@ namespace VMS.TPS
                                 }
                                 else // more than 1 then prompt for user choosing between non-empty ones
                                 {
-                                    partial_set_of_structs = set_of_structs.Where(s => s.Id.Contains(text) && !s.IsEmpty);
+                                    partial_set_of_structs = set_of_structs.Where(s => s.Id.ToLower().Contains(text.ToLower()) 
+                                                                                        && !s.IsEmpty);
                                     title = t.Item2;
                                     selectOneStruct = new SelectOneStruct(title, my_plan, partial_set_of_structs);
                                     selected_structs.Add(Tuple.Create(t.Item2, selectOneStruct.Get_Selected()));
                                     flag = false;
                                 }
                             }
-                            else
+                            else // not found or empty
                             {
-                                if (!set_of_structs.Where(s => s.Id == text).Any())
-                                {
+                                if (!set_of_structs.Where(s => s.Id.ToLower() == text.ToLower()).Any())
+                                { // Mesage if not any found checking with lower case (any case)
                                     System.Windows.MessageBox.Show("There is no structure with" + System.Environment.NewLine +
                                           "Id containing: " + text);
                                 }
                                 else
-                                {
+                                { // found but empty
                                     System.Windows.MessageBox.Show("Structure with Id:" + System.Environment.NewLine +
                                            text + "  is empty.");
                                 }
@@ -548,14 +550,14 @@ namespace VMS.TPS
                     while (flag) // do while flag is true
                     {
                         text = Microsoft.VisualBasic.Interaction.InputBox(t.Item2 + "?" + Environment.NewLine +
-                            "(*) type entire or partial name" + Environment.NewLine + 
+                            "(*) entire or partial name (case insensitive)" + Environment.NewLine + 
                             "( leave empty or cancel for not selecting any )", "Enter structure name");
                         // Have to evaluete: if text empty, then don't choose nothing ans set flag false to continue
                         //                   if text corresponds to structure, select structure and set flag false to cont.
                         //                   if text not correspond to structure, keep flag=true to ask again
                         if (text != "") // non empty string
                         {
-                            if (set_of_structs.Where(s => s.Id.Contains(text) && !s.IsEmpty).Any()) // Found match flag to false
+                            if (set_of_structs.Where(s => s.Id.ToLower().Contains(text.ToLower()) && !s.IsEmpty).Any()) // Found match flag to false
                             {
                                 // check exact match and is not empty
                                 if (set_of_structs.Where(s => s.Id == text && !s.IsEmpty).Any())
@@ -566,7 +568,8 @@ namespace VMS.TPS
                                 }
                                 else // more than 1 then prompt for user choosing between non-empty ones
                                 {
-                                    partial_set_of_structs = set_of_structs.Where(s => s.Id.Contains(text) && !s.IsEmpty);
+                                    partial_set_of_structs = set_of_structs.Where(s => s.Id.ToLower().Contains(text.ToLower()) 
+                                                                                       && !s.IsEmpty);
                                     title = t.Item2;
                                     selectOneStruct = new SelectOneStruct(title, my_plan, partial_set_of_structs);
                                     selected_structs.Add(Tuple.Create(t.Item2, selectOneStruct.Get_Selected()));
