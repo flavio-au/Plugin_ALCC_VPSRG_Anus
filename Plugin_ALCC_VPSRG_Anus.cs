@@ -63,6 +63,7 @@ namespace VMS.TPS
             // Output string
             // this string will get the text reporting for import on VPSRG_Anus_case-tracking_sheet.xlsm 
             String VPSRG_Anus_txt = null; // TODO change from VPSRG_HN_track **********************************!!!!!!!
+            String Pat_Record_Id="";
 
 
             // "Metric" is a constant with a unit, even a "relative" unit (%)
@@ -99,6 +100,16 @@ namespace VMS.TPS
             bool alcc_flag=(my_patient.Hospital.Id=="Barwon Health"); // a flag for using ALCC-Ids
             String Rapidplan_version;
 
+            //** Change or preserve Patient Record UR
+            Pat_Record_Id = Microsoft.VisualBasic.Interaction.InputBox("Type Fake UR ?"
+                + System.Environment.NewLine + System.Environment.NewLine
+                    + "(leave blank + [Ok] or [Cancel]" + System.Environment.NewLine + " for keeping Original UR )"
+                    , "Fake or Original UR");
+            if (Pat_Record_Id.Length==0)
+            {
+                Pat_Record_Id = my_patient.Id;
+            }
+            
             //** Select course
             my_list.Clear();
             foreach (Course course in my_patient.Courses)
@@ -603,7 +614,7 @@ namespace VMS.TPS
                 writer.WriteStartDocument(true);
                 writer.WriteStartElement("VICRP_Anus"); // Root element
                     writer.WriteStartElement("Patient_Id");
-                    writer.WriteString(my_patient.Id);
+                    writer.WriteString(Pat_Record_Id);
                     writer.WriteEndElement(); // </Patient_Id>
                     writer.WriteStartElement("Hospital");
                     writer.WriteString(my_patient.Hospital.Id);
@@ -698,9 +709,9 @@ namespace VMS.TPS
 
                 // create the XML file.
                 string temp = @"c:\temp";
-                text = temp + @"\" + my_patient.Hospital.Id + @"\" + my_patient.Id;
+                text = temp + @"\" + my_patient.Hospital.Id + @"\" + Pat_Record_Id;
                 System.IO.Directory.CreateDirectory(text);
-                string sXMLPath = text + @"\" + my_patient.Hospital.Id + "_" + my_patient.Id + "_" + my_plan.Id + ".xml";
+                string sXMLPath = text + @"\" + my_patient.Hospital.Id + "_" + Pat_Record_Id + "_" + my_plan.Id + ".xml";
 
                 using (System.IO.FileStream file = new System.IO.FileStream(sXMLPath,
                 System.IO.FileMode.Create, System.IO.FileAccess.Write))
@@ -724,7 +735,7 @@ namespace VMS.TPS
             // Col C 
             VPSRG_Anus_txt = VPSRG_Anus_txt + my_patient.Hospital.Id + ", ";
             // Col D 
-            VPSRG_Anus_txt = VPSRG_Anus_txt + my_patient.Id + ", "; 
+            VPSRG_Anus_txt = VPSRG_Anus_txt + Pat_Record_Id + ", "; 
             // Col E
             VPSRG_Anus_txt = VPSRG_Anus_txt + Diagnosis +", ";
             // Col F
@@ -1048,9 +1059,9 @@ namespace VMS.TPS
             System.Windows.MessageBox.Show(txt,"Selected structures");
 
             //** Done, now to write the text
-            string txtPath = text + @"\" + my_patient.Hospital.Id + "_" + my_patient.Id + "_" + my_plan.Id + ".csv";
+            string txtPath = text + @"\" + my_patient.Hospital.Id + "_" + Pat_Record_Id + "_" + my_plan.Id + ".csv";
             string txtMsgPath = text + @"\SelectedStructures_" + my_patient.Hospital.Id + "_" 
-                                    + my_patient.Id + "_" + my_plan.Id + ".txt";
+                                    + Pat_Record_Id + "_" + my_plan.Id + ".txt";
 
             // create or overwrite
             System.IO.File.WriteAllText(txtMsgPath, txt, Encoding.UTF8);
