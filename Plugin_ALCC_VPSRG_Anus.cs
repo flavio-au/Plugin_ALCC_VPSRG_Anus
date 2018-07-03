@@ -707,6 +707,7 @@ namespace VMS.TPS
                 writer.Flush();
                 mStream.Flush();
 
+
                 // create the XML file.
                 string temp = @"c:\temp";
                 text = temp + @"\" + my_patient.Hospital.Id + @"\" + Pat_Record_Id;
