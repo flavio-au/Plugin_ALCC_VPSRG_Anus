@@ -9,7 +9,7 @@
     <OutputType>library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Plugin_ALCC_VPSRG_Anus</RootNamespace>
-    <AssemblyName>Plugin_ALCC_VPSRG_Anus.esapi</AssemblyName>
+    <AssemblyName>Plugin_ALCC_VPSRG_Anusv1.1.esapi</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -65,6 +65,7 @@
     <Compile Include="DvhExtensions.cs" />
     <Compile Include="Methods.cs" />
     <Compile Include="Plugin_ALCC_VPSRG_Anus.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Select_PlanItemSupport.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

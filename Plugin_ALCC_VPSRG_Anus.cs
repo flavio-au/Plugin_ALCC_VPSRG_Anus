@@ -667,13 +667,13 @@ namespace VMS.TPS
                     writer.WriteString(Rapidplan_version);
                     writer.WriteEndElement(); // </RapidPlanModelVersion>
                     // loop on DVHs
-                    foreach (var item in selected_structs)
+                    foreach (var SelStructrTuple in selected_structs)
                     {
-                      DVHData dvh = my_plan.GetDVHCumulativeData(item.Item2,
+                      DVHData dvh = my_plan.GetDVHCumulativeData(SelStructrTuple.Item2,
                              DoseValuePresentation.Absolute, VolumePresentation.AbsoluteCm3, bin);
                       writer.WriteStartElement("DVHData");
                         writer.WriteStartElement("DVH_Label");
-                        writer.WriteString(item.Item1);
+                        writer.WriteString(SelStructrTuple.Item1);
                         writer.WriteEndElement(); // </DVH_Label>
                         writer.WriteStartElement("SamplingCoverage");
                         writer.WriteString(Math.Round(dvh.SamplingCoverage,5).ToString());
@@ -701,33 +701,153 @@ namespace VMS.TPS
                             }
                         writer.WriteEndElement(); // </Curve_Data>
                       writer.WriteEndElement(); // </DVHData>
+
+                        //Check if Estimated DVH exist and write data if yes
+                        if (my_plan is PlanSetup)
+                        {
+                            EstimatedDVH upEstDVH = null;
+                            EstimatedDVH lowEstDVH = null;
+                            if (((PlanSetup)my_plan).DVHEstimates.
+                                Where(s => s.Structure.Id == SelStructrTuple.Item2.Id && s.Type == DVHEstimateType.Upper).Any())
+                            {
+                                upEstDVH = ((PlanSetup)my_plan).DVHEstimates.
+                                First(s => s.Structure.Id == SelStructrTuple.Item2.Id && s.Type == DVHEstimateType.Upper);
+                            }
+
+                            if (((PlanSetup)my_plan).DVHEstimates.
+                                Where(s => s.Structure.Id == SelStructrTuple.Item2.Id && s.Type == DVHEstimateType.Lower).Any())
+                            {
+                                lowEstDVH = ((PlanSetup)my_plan).DVHEstimates.
+                                First(s => s.Structure.Id == SelStructrTuple.Item2.Id && s.Type == DVHEstimateType.Lower);
+                            }
+
+                            if ((upEstDVH != null && lowEstDVH != null)) // REVISAR !!!!!!!!!!!!!!!!!!!!!
+                            {
+                                // First calc scale convertion for DVH to Abs Dose and Abs Volume
+                                double doseScale = 1;
+                                string doseUnit = "Gy";
+                                double volScale = 1;
+
+                                //LowEstimate
+                                if ((int)lowEstDVH.CurveData[0].DoseValue.Unit == 3)
+                                {
+                                    // doses in % (of prescriptio) to be converted into abs dose
+                                    // preserving the global units of the plan
+                                    doseScale = TotalPrescribedDose / PrescribedPercentage;
+                                    doseUnit = lowEstDVH.CurveData[0].DoseValue.Unit.ToString();
+                                }
+                                if (lowEstDVH.CurveData[0].VolumeUnit == "%")
+                                {
+                                    // volumes in % (of Struct. Volume) to be converted into abs volume [cm3]
+                                    volScale = SelStructrTuple.Item2.Volume / 100;
+                                }
+
+                                //Start writing lower estimate
+                                writer.WriteStartElement("EstimatedDVH");
+                                writer.WriteStartElement("EstimatedDVH_Label");
+                                writer.WriteString(SelStructrTuple.Item1);
+                                writer.WriteEndElement(); // </EstimatedDVH_Label>
+                                writer.WriteStartElement("EstimatedDVH_Type");
+                                writer.WriteString(lowEstDVH.Type.ToString());
+                                writer.WriteEndElement(); // </EstimatedDVH_Type>
+                                writer.WriteStartElement("Str_Volume");
+                                writer.WriteString(Math.Round(SelStructrTuple.Item2.Volume, 3).ToString());
+                                writer.WriteEndElement(); // </Str_Volume>
+                                writer.WriteStartElement("Vol_Unit");
+                                writer.WriteString("cm3");
+                                writer.WriteEndElement(); // </Vol_Unit>
+                                writer.WriteStartElement("Dose_Unit");
+                                writer.WriteString(doseUnit);
+                                writer.WriteEndElement(); // </Dose_Unit>
+                                writer.WriteStartElement("Curve_Data");
+                                foreach (var point in lowEstDVH.CurveData)
+                                {
+                                    writer.WriteStartElement("DVH_point");
+                                    writer.WriteStartElement("Dose");
+                                    writer.WriteString(Math.Round(point.DoseValue.Dose * doseScale, 4).ToString());
+                                    writer.WriteEndElement(); // </Dose>
+                                    writer.WriteStartElement("Volume");
+                                    writer.WriteString(Math.Round(point.Volume * volScale, 3).ToString());
+                                    writer.WriteEndElement(); // </Volume>
+                                    writer.WriteEndElement(); // </DVH_point>
+                                }
+                                writer.WriteEndElement(); // </Curve_Data>
+                                writer.WriteEndElement(); // </EstimatedDVH>
+
+                                //UpEstimate
+                                if ((int)upEstDVH.CurveData[0].DoseValue.Unit == 3)
+                                {
+                                    // doses in % (of prescriptio) to be converted into abs dose
+                                    // preserving the global units of the plan
+                                    doseScale = TotalPrescribedDose / PrescribedPercentage;
+                                    doseUnit = upEstDVH.CurveData[0].DoseValue.Unit.ToString();
+                                }
+                                if (upEstDVH.CurveData[0].VolumeUnit == "%")
+                                {
+                                    // volumes in % (of Struct. Volume) to be converted into abs volume [cm3]
+                                    volScale = SelStructrTuple.Item2.Volume / 100;
+                                }
+
+                                //Start writing uper estimate
+                                writer.WriteStartElement("EstimatedDVH");
+                                writer.WriteStartElement("EstimatedDVH_Label");
+                                writer.WriteString(SelStructrTuple.Item1);
+                                writer.WriteEndElement(); // </EstimatedDVH_Label>
+                                writer.WriteStartElement("EstimatedDVH_Type");
+                                writer.WriteString(upEstDVH.Type.ToString());
+                                writer.WriteEndElement(); // </EstimatedDVH_Type>
+                                writer.WriteStartElement("Str_Volume");
+                                writer.WriteString(Math.Round(SelStructrTuple.Item2.Volume, 3).ToString());
+                                writer.WriteEndElement(); // </Str_Volume>
+                                writer.WriteStartElement("Vol_Unit");
+                                writer.WriteString("cm3");
+                                writer.WriteEndElement(); // </Vol_Unit>
+                                writer.WriteStartElement("Dose_Unit");
+                                writer.WriteString(doseUnit);
+                                writer.WriteEndElement(); // </Dose_Unit>
+                                writer.WriteStartElement("Curve_Data");
+                                foreach (var point in upEstDVH.CurveData)
+                                {
+                                    writer.WriteStartElement("DVH_point");
+                                    writer.WriteStartElement("Dose");
+                                    writer.WriteString(Math.Round(point.DoseValue.Dose * doseScale, 4).ToString());
+                                    writer.WriteEndElement(); // </Dose>
+                                    writer.WriteStartElement("Volume");
+                                    writer.WriteString(Math.Round(point.Volume * volScale, 3).ToString());
+                                    writer.WriteEndElement(); // </Volume>
+                                    writer.WriteEndElement(); // </DVH_point>
+                                }
+                                writer.WriteEndElement(); // </Curve_Data>
+                                writer.WriteEndElement(); // </EstimatedDVH>
+                            }
+                        }
                     }
-                writer.WriteEndDocument();
-                // done writing to the memory stream
-                writer.Flush();
-                mStream.Flush();
+                    writer.WriteEndDocument();
+                    // done writing to the memory stream
+                    writer.Flush();
+                    mStream.Flush();
 
 
-                // create the XML file.
-                string temp = @"c:\temp";
-                text = temp + @"\" + my_patient.Hospital.Id + @"\" + Pat_Record_Id;
-                System.IO.Directory.CreateDirectory(text);
-                string sXMLPath = text + @"\" + my_patient.Hospital.Id + "_" + Pat_Record_Id + "_" + my_plan.Id + ".xml";
+                    // create the XML file.
+                    string temp = @"c:\temp";
+                    text = temp + @"\" + my_patient.Hospital.Id + @"\" + Pat_Record_Id;
+                    System.IO.Directory.CreateDirectory(text);
+                    string sXMLPath = text + @"\" + my_patient.Hospital.Id + "_" + Pat_Record_Id + "_" + my_plan.Id + ".xml";
 
-                using (System.IO.FileStream file = new System.IO.FileStream(sXMLPath,
-                System.IO.FileMode.Create, System.IO.FileAccess.Write))
-                {
-                    // Have to rewind the MemoryStream in order to read its contents.
-                    mStream.Position = 0;
-                    mStream.CopyTo(file);
-                    file.Flush();
-                    file.Close();
-                }
+                    using (System.IO.FileStream file = new System.IO.FileStream(sXMLPath,
+                    System.IO.FileMode.Create, System.IO.FileAccess.Write))
+                    {
+                        // Have to rewind the MemoryStream in order to read its contents.
+                        mStream.Position = 0;
+                        mStream.CopyTo(file);
+                        file.Flush();
+                        file.Close();
+                    }
 
-                // 'Start' generated XML file to launch browser window
-                    // System.Diagnostics.Process.Start(sXMLPath);
-                // Sleep for a few seconds to let internet browser window to start
-                    // System.Threading.Thread.Sleep(TimeSpan.FromSeconds(3));
+                    // 'Start' generated XML file to launch browser window
+                        // System.Diagnostics.Process.Start(sXMLPath);
+                    // Sleep for a few seconds to let internet browser window to start
+                        // System.Threading.Thread.Sleep(TimeSpan.FromSeconds(3));
             }
 
             // Now the creation of the text file for the worksheet
