@@ -216,6 +216,9 @@ namespace VMS.TPS
             selected = selectDiag.Get_Item().First().ToString();
             int num_of_ptvs = Int32.Parse(selected);
 
+            // ****** print # of PTVs selected
+            System.Windows.MessageBox.Show("number of PTVs= " + num_of_ptvs.ToString());
+
             // Define dose levels of Int and Low PTVs
             if (num_of_ptvs==2) // Only Low
             {
@@ -384,6 +387,9 @@ namespace VMS.TPS
             selected_structs.Add(Tuple.Create("Body",
                                 set_of_structs.Where(s => s.DicomType.ToLower() == "external").First()));
 
+            // ****** print DICOM:"external" structure ID
+            System.Windows.MessageBox.Show("DICOM:external[BODY] ID= "  + selected_structs[selected_structs.Count-1].Item2.Id);
+
             // Loop on list of structs to search
             foreach (Tuple<String,String,String> t in lst_struct_to_search)
             {
@@ -418,7 +424,7 @@ namespace VMS.TPS
                         bool flag_PTVp = set_of_structs.Where(s => s.StructureCodeInfos.Any() &&
                                                 s.StructureCodeInfos.First().Code == "PTVp" && !s.IsEmpty).Any();
 
-                        if (flag_PTV_High & !flag_PTVp)
+                        if (flag_PTV_High & !flag_PTVp) // PTV_High code case
                         {
                             // check if only 1 has same code and is not empty
                             if (set_of_structs.Where(s => s.StructureCodeInfos.First().Code == "PTV_High").Count() == 1) 
@@ -427,6 +433,10 @@ namespace VMS.TPS
                                     set_of_structs.Where(s => s.StructureCodeInfos.First().Code == "PTV_High"
                                                             & !s.IsEmpty).First()));
                                 flag = false;
+
+                                // ****** print Auto sel. PTV_High structure ID
+                                System.Windows.MessageBox.Show("Auto sel. PTV_High ID= " + selected_structs[selected_structs.Count - 1].Item2.Id);
+
                             }
                             else // more than 1 then prompt for user choosing between non-empty ones
                             {
@@ -437,6 +447,9 @@ namespace VMS.TPS
                                 selectOneStruct = new SelectOneStruct(title, my_plan, partial_set_of_structs);
                                 selected_structs.Add(Tuple.Create(t.Item2, selectOneStruct.Get_Selected()));
                                 flag = false;
+
+                                // ****** print Manual sel. PTV_High structure ID
+                                System.Windows.MessageBox.Show("You selected PTV_High ID= " + selected_structs[selected_structs.Count - 1].Item2.Id);
                             }
                         }
                         if (flag_PTVp & !flag_PTV_High)
@@ -448,6 +461,9 @@ namespace VMS.TPS
                                     set_of_structs.Where(s => s.StructureCodeInfos.First().Code == "PTVp"
                                                             & !s.IsEmpty).First()));
                                 flag = false;
+
+                                // ****** print Auto sel. PTVp structure ID
+                                System.Windows.MessageBox.Show("Auto sel. PTV_High (PTVp) ID= " + selected_structs[selected_structs.Count - 1].Item2.Id);
                             }
                             else // more than 1 then prompt for user choosing
                             {
@@ -457,6 +473,10 @@ namespace VMS.TPS
                                 selectOneStruct = new SelectOneStruct(title, my_plan, partial_set_of_structs);
                                 selected_structs.Add(Tuple.Create(t.Item2, selectOneStruct.Get_Selected()));
                                 flag = false;
+
+                                // ****** print Manual sel. PTV_High (PTVp) structure ID
+                                System.Windows.MessageBox.Show("You selected PTV_High (PTVp) ID= " + selected_structs[selected_structs.Count - 1].Item2.Id);
+
                             }
                         }
                         if (flag_PTVp & flag_PTV_High) // clearly more than 1...
@@ -467,6 +487,10 @@ namespace VMS.TPS
                             selectOneStruct = new SelectOneStruct(title, my_plan, partial_set_of_structs);
                             selected_structs.Add(Tuple.Create(t.Item2, selectOneStruct.Get_Selected()));
                             flag = false;
+
+                            // ****** print Manual sel. PTV_High/PTVp structure ID
+                            System.Windows.MessageBox.Show("You selected PTV_High (PTV_High or PTVp) ID= " + selected_structs[selected_structs.Count - 1].Item2.Id);
+
                         }
                     }
                     // Promt for name (if flag still true)
@@ -475,7 +499,7 @@ namespace VMS.TPS
                         text = Microsoft.VisualBasic.Interaction.InputBox("PTV High ? " + Environment.NewLine +
                             "(*) entire or partial name (case insensitive)" + Environment.NewLine , "Enter PTV High structure name");
                         // Have to evaluate: if text corresponds to structure, select structure and set flag false to cont.
-                        //                   if text not correspond to structure, keep flag=true to ask again
+                        //                   if text not corresponds to structure, keep flag=true to ask again
                         if (text != "") // non empty string
                         {
                             if (set_of_structs.Where(s => s.Id.ToLower().Contains(text.ToLower()) && !s.IsEmpty).Any()) //Found flag to false
@@ -486,6 +510,9 @@ namespace VMS.TPS
                                     selected_structs.Add(Tuple.Create(t.Item2,
                                         set_of_structs.Where(s => s.Id == text && !s.IsEmpty).First()));
                                     flag = false;
+
+                                    // ****** print Manual sel. PTV_High structure ID
+                                    System.Windows.MessageBox.Show("You selected PTV_High ID= " + selected_structs[selected_structs.Count - 1].Item2.Id);
                                 }
                                 else // more than 1 then prompt for user choosing between non-empty ones
                                 {
@@ -495,6 +522,10 @@ namespace VMS.TPS
                                     selectOneStruct = new SelectOneStruct(title, my_plan, partial_set_of_structs);
                                     selected_structs.Add(Tuple.Create(t.Item2, selectOneStruct.Get_Selected()));
                                     flag = false;
+
+                                    // ****** print Manual sel. PTV_High structure ID
+                                    System.Windows.MessageBox.Show("You selected PTV_High ID= " + selected_structs[selected_structs.Count - 1].Item2.Id);
+
                                 }
                             }
                             else // not found or empty
@@ -545,6 +576,10 @@ namespace VMS.TPS
                                 selected_structs.Add(Tuple.Create(t.Item2,
                                 set_of_structs.Where(s => s.StructureCodeInfos.First().Code == t.Item1 & !s.IsEmpty).First()));
                                 flag = false;
+
+                                // ****** print auto sel struct structure ID
+                                System.Windows.MessageBox.Show("Auto selected " + t.Item2 +" ID= " + selected_structs[selected_structs.Count - 1].Item2.Id);
+
                             }
                             else // more than 1 then prompt for user choosing
                             {
@@ -554,6 +589,9 @@ namespace VMS.TPS
                                 selectOneStruct = new SelectOneStruct(title, my_plan, partial_set_of_structs);
                                 selected_structs.Add(Tuple.Create(t.Item2, selectOneStruct.Get_Selected()));
                                 flag = false;
+
+                                // ****** print manual sel struct structure ID
+                                System.Windows.MessageBox.Show("You selected " + t.Item2 + " ID= " + selected_structs[selected_structs.Count - 1].Item2.Id);
                             }
                         }
                     }
@@ -576,6 +614,10 @@ namespace VMS.TPS
                                     selected_structs.Add(Tuple.Create(t.Item2,
                                         set_of_structs.Where(s => s.Id == text && !s.IsEmpty).First()));
                                     flag = false;
+
+                                    // ****** print manual sel struct structure ID
+                                    System.Windows.MessageBox.Show("You selected " + t.Item2 + " ID= " + selected_structs[selected_structs.Count - 1].Item2.Id);
+
                                 }
                                 else // more than 1 then prompt for user choosing between non-empty ones
                                 {
@@ -585,6 +627,9 @@ namespace VMS.TPS
                                     selectOneStruct = new SelectOneStruct(title, my_plan, partial_set_of_structs);
                                     selected_structs.Add(Tuple.Create(t.Item2, selectOneStruct.Get_Selected()));
                                     flag = false;
+
+                                    // ****** print manual sel struct structure ID
+                                    System.Windows.MessageBox.Show("You selected " + t.Item2 + " ID= " + selected_structs[selected_structs.Count - 1].Item2.Id);
                                 }
                             }
                         }
@@ -592,6 +637,9 @@ namespace VMS.TPS
                         {
                             if (!(t.Item1=="PTV_Low") && !(t.Item1=="PTV_Intermediate")) // Case of not PTV_low nor PTV_Interm.
                             { flag = false; } // empty string canceling imput but not for PTV Low/Intermediate
+
+                            // ****** print cancel sel struct structure ID
+                            System.Windows.MessageBox.Show("You cancel selection (nothing selected) of " + t.Item2);
                         }
                     }
                 }// cont. loop on list of structs to search
