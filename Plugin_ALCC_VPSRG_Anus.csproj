@@ -9,7 +9,7 @@
     <OutputType>library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Plugin_ALCC_VPSRG_Anus</RootNamespace>
-    <AssemblyName>Plugin_ALCC_VPSRG_Anusv1.1_Debug.esapi</AssemblyName>
+    <AssemblyName>Plugin_ALCC_VPSRG_Anusv1.1_Debug2.esapi</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
