@@ -536,19 +536,19 @@ namespace VMS.TPS
                     }
                     else // Search by code
                     {
-                        if (set_of_structs.Where(s => s.StructureCodeInfos.Any() && s.StructureCodeInfos.First().Code == t.Item1 
+                        if (set_of_structs.Where(s => s.StructureCodeInfos.Any() && s.StructureCodeInfos.FirstOrDefault().Code == t.Item1 
                                                          && !s.IsEmpty).Any())
                         {
                             // check if only 1 has same code
-                            if (set_of_structs.Where(s => s.StructureCodeInfos.First().Code == t.Item1).Count() == 1) 
+                            if (set_of_structs.Where(s => s.StructureCodeInfos.FirstOrDefault().Code == t.Item1).Count() == 1) 
                             {
                                 selected_structs.Add(Tuple.Create(t.Item2,
-                                set_of_structs.Where(s => s.StructureCodeInfos.First().Code == t.Item1 & !s.IsEmpty).First()));
+                                set_of_structs.Where(s => s.StructureCodeInfos.FirstOrDefault().Code == t.Item1 & !s.IsEmpty).First()));
                                 flag = false;
                             }
                             else // more than 1 then prompt for user choosing
                             {
-                                partial_set_of_structs = set_of_structs.Where(s => s.StructureCodeInfos.First().Code == t.Item1
+                                partial_set_of_structs = set_of_structs.Where(s => s.StructureCodeInfos.FirstOrDefault().Code == t.Item1
                                                                                 && !s.IsEmpty);
                                 title = t.Item2;
                                 selectOneStruct = new SelectOneStruct(title, my_plan, partial_set_of_structs);
