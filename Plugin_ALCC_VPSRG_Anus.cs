@@ -411,64 +411,6 @@ namespace VMS.TPS
                             flag = false;
                         }
                     }
-                    else // Search by code and NOT empty
-                    {
-                        bool flag_PTV_High = set_of_structs.Where(s => s.StructureCodeInfos.Any() &&
-                                                s.StructureCodeInfos.First().Code == "PTV_High" && !s.IsEmpty).Any();
-                        bool flag_PTVp = set_of_structs.Where(s => s.StructureCodeInfos.Any() &&
-                                                s.StructureCodeInfos.First().Code == "PTVp" && !s.IsEmpty).Any();
-
-                        if (flag_PTV_High & !flag_PTVp)
-                        {
-                            // check if only 1 has same code and is not empty
-                            if (set_of_structs.Where(s => s.StructureCodeInfos.First().Code == "PTV_High").Count() == 1) 
-                            {
-                                selected_structs.Add(Tuple.Create(t.Item2,
-                                    set_of_structs.Where(s => s.StructureCodeInfos.First().Code == "PTV_High"
-                                                            & !s.IsEmpty).First()));
-                                flag = false;
-                            }
-                            else // more than 1 then prompt for user choosing between non-empty ones
-                            {
-                                partial_set_of_structs = set_of_structs.Where(s => 
-                                                               s.StructureCodeInfos.First().Code == "PTV_High"
-                                                               & !s.IsEmpty);
-                                title = t.Item2;
-                                selectOneStruct = new SelectOneStruct(title, my_plan, partial_set_of_structs);
-                                selected_structs.Add(Tuple.Create(t.Item2, selectOneStruct.Get_Selected()));
-                                flag = false;
-                            }
-                        }
-                        if (flag_PTVp & !flag_PTV_High)
-                        {
-                            // check if only 1 has same code and is not empty
-                            if (set_of_structs.Where(s => s.StructureCodeInfos.First().Code == "PTVp").Count() == 1) 
-                            {
-                                selected_structs.Add(Tuple.Create(t.Item2,
-                                    set_of_structs.Where(s => s.StructureCodeInfos.First().Code == "PTVp"
-                                                            & !s.IsEmpty).First()));
-                                flag = false;
-                            }
-                            else // more than 1 then prompt for user choosing
-                            {
-                                partial_set_of_structs = set_of_structs.Where(s => s.StructureCodeInfos.First().Code == "PTVp" 
-                                                                                    & !s.IsEmpty);
-                                title = t.Item2;
-                                selectOneStruct = new SelectOneStruct(title, my_plan, partial_set_of_structs);
-                                selected_structs.Add(Tuple.Create(t.Item2, selectOneStruct.Get_Selected()));
-                                flag = false;
-                            }
-                        }
-                        if (flag_PTVp & flag_PTV_High) // clearly more than 1...
-                        {
-                            partial_set_of_structs = set_of_structs.Where(s => (s.StructureCodeInfos.First().Code == "PTVp" |
-                                                            s.StructureCodeInfos.First().Code == "PTV_High") && !s.IsEmpty);
-                            title = t.Item2;
-                            selectOneStruct = new SelectOneStruct(title, my_plan, partial_set_of_structs);
-                            selected_structs.Add(Tuple.Create(t.Item2, selectOneStruct.Get_Selected()));
-                            flag = false;
-                        }
-                    }
                     // Promt for name (if flag still true)
                     while (flag) // do while flag is true
                     {
@@ -532,29 +474,6 @@ namespace VMS.TPS
                             selectOneStruct = new SelectOneStruct(title, my_plan, partial_set_of_structs);
                             selected_structs.Add(Tuple.Create(t.Item2, selectOneStruct.Get_Selected()));
                             flag = false;
-                        }
-                    }
-                    else // Search by code
-                    {
-                        if (set_of_structs.Where(s => s.StructureCodeInfos.Any() && s.StructureCodeInfos.FirstOrDefault().Code == t.Item1 
-                                                         && !s.IsEmpty).Any())
-                        {
-                            // check if only 1 has same code
-                            if (set_of_structs.Where(s => s.StructureCodeInfos.FirstOrDefault().Code == t.Item1).Count() == 1) 
-                            {
-                                selected_structs.Add(Tuple.Create(t.Item2,
-                                set_of_structs.Where(s => s.StructureCodeInfos.FirstOrDefault().Code == t.Item1 & !s.IsEmpty).First()));
-                                flag = false;
-                            }
-                            else // more than 1 then prompt for user choosing
-                            {
-                                partial_set_of_structs = set_of_structs.Where(s => s.StructureCodeInfos.FirstOrDefault().Code == t.Item1
-                                                                                && !s.IsEmpty);
-                                title = t.Item2;
-                                selectOneStruct = new SelectOneStruct(title, my_plan, partial_set_of_structs);
-                                selected_structs.Add(Tuple.Create(t.Item2, selectOneStruct.Get_Selected()));
-                                flag = false;
-                            }
                         }
                     }
                     // Promt for name (if flag still true)
