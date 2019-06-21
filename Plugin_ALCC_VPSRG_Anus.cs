@@ -747,8 +747,18 @@ namespace VMS.TPS
                     mStream.Flush();
 
 
-                    // create the XML file.
-                    string temp = @"c:\temp";
+                // create the XML file.
+                // This version 1.4 gives user option to choose folder where to write output
+                //
+                FolderBrowserDialog fbd = new FolderBrowserDialog();
+                fbd.RootFolder = Environment.SpecialFolder.MyComputer;
+                fbd.SelectedPath = @"C:\temp";
+                fbd.Description = "Select destination folder" + System.Environment.NewLine
+                    + System.Environment.NewLine + @"if 'Cancel' or closed [x] -> C:\temp gets selected"
+                    + System.Environment.NewLine;
+                DialogResult usr_selected = fbd.ShowDialog();
+
+                string temp = fbd.SelectedPath;
                     text = temp + @"\" + my_patient.Hospital.Id + @"\" + Pat_Record_Id;
                     System.IO.Directory.CreateDirectory(text);
                     string sXMLPath = text + @"\" + my_patient.Hospital.Id + "_" + Pat_Record_Id + "_" + my_plan.Id + ".xml";
